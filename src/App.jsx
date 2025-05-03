@@ -129,7 +129,7 @@ function App() {
             const payload = Object.fromEntries(
                 Object.entries(formData).map(([k,v]) => [k, k !== 'Soil' ? parseFloat(v) : v])
             );
-            const res = await axios.post('http://localhost:5000/predict', payload);
+            const res = await axios.post('https://15c4-144-24-111-11.ngrok-free.app/predict', payload);
             setPrediction(res.data.predicted_crop);
         } catch (err) {
             console.error(err.response?.data);
