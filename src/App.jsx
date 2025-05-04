@@ -97,6 +97,11 @@ const styles = {
         backgroundColor: '#f8d7da',
         borderRadius: '5px',
         border: '1px solid #f5c6cb'
+    },
+    locationText: {
+        marginTop: '10px',
+        color: '#0b3d2e',
+        fontWeight: '500'
     }
 };
 
@@ -110,12 +115,54 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [locationInfo, setLocationInfo] = useState('');
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    const fetchWeather = async () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const { latitude, longitude } = position.coords;
+                setLocationInfo(`Location used: Latitude ${latitude.toFixed(4)}, Longitude ${longitude.toFixed(4)}`);
+
+                try {
+                    const response = await axios.get('https://archive-api.open-meteo.com/v1/archive', {
+                        params: {
+                            latitude,
+                            longitude,
+                            start_date: '2024-11-01',
+                            end_date: '2025-04-30',
+                            daily: 'temperature_2m_mean,precipitation_sum,relative_humidity_2m_mean',
+                            timezone: 'auto'
+                        },
+                    });
+
+                    const data = response.data?.daily;
+                    if (data) {
+                        const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+                        const temperature = avg(data.temperature_2m_mean).toFixed(2);
+                        const humidity = avg(data.relative_humidity_2m_mean).toFixed(2);
+                        const rainfall = avg(data.precipitation_sum).toFixed(2);
+
+                        setFormData(prev => ({
+                            ...prev,
+                            Temperature: temperature,
+                            Humidity: humidity,
+                            Rainfall: rainfall,
+                        }));
+                    }
+                } catch (err) {
+                    console.error('Weather fetch failed', err);
+                }
+            }, (error) => {
+                console.error('Geolocation error', error);
+            });
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -144,6 +191,8 @@ function App() {
             <Navbar />
             <div style={styles.card(isMobile)}>
                 <h2 style={{ color: '#0b3d2e' }}>Crop Recommendation System 🌾</h2>
+                <button onClick={fetchWeather} style={styles.button}>Get Weather Data</button>
+                {locationInfo && <p style={styles.locationText}>{locationInfo}</p>}
                 <form onSubmit={handleSubmit}>
                     {['Temperature','Humidity','Rainfall','PH','Nitrogen','Phosphorous','Potassium','Carbon'].map(name => (
                         <input
