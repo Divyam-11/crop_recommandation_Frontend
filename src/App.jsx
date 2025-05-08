@@ -194,29 +194,33 @@ function App() {
                 <button onClick={fetchWeather} style={styles.button}>Get Weather Data</button>
                 {locationInfo && <p style={styles.locationText}>{locationInfo}</p>}
                 <form onSubmit={handleSubmit}>
-                    {['Temperature','Humidity','Rainfall','PH','Nitrogen','Phosphorous','Potassium','Carbon'].map(name => (
+                {['Temperature','Humidity','Rainfall','PH','Nitrogen','Phosphorous','Potassium','Carbon'].map(name => (
+                    <div key={name} style={{ textAlign: 'left', marginBottom: '10px' }}>
+                        <label htmlFor={name} style={{ fontWeight: '500', color: '#0b3d2e' }}>{name}</label>
                         <input
-                            key={name}
                             style={styles.input}
                             type="number"
                             step="any"
                             name={name}
-                            placeholder={name}
+                            id={name}
                             value={formData[name]}
                             onChange={handleChange}
                             required
                         />
-                    ))}
-                    <select style={styles.select} name="Soil" value={formData.Soil} onChange={handleChange} required>
+                    </div>
+                ))}
+                <div style={{ textAlign: 'left', marginBottom: '10px' }}>
+                    <label htmlFor="Soil" style={{ fontWeight: '500', color: '#0b3d2e' }}>Soil Type</label>
+                    <select style={styles.select} name="Soil" id="Soil" value={formData.Soil} onChange={handleChange} required>
                         {['Acidic Soil','Peaty Soil','Neutral Soil','Loamy Soil','Alkaline Soil'].map(soil => (
                             <option key={soil} value={soil}>{soil}</option>
                         ))}
                     </select>
-                    <button type="submit" style={styles.button} disabled={isLoading}>
-                        {isLoading ? 'Predicting...' : 'Predict Crop'}
-                    </button>
-                </form>
-                {prediction && (
+                </div>
+                <button type="submit" style={styles.button} disabled={isLoading}>
+                    {isLoading ? 'Predicting...' : 'Predict Crop'}
+                </button>
+            </form>                {prediction && (
                     <div style={styles.result}><h3>Recommended Crop: <strong>{prediction}</strong></h3></div>
                 )}
                 {error && (
